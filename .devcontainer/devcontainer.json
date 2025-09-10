@@ -1,0 +1,11 @@
+{
+    "name": "Flutter",
+    "image": "rockcm/flutter-devcontainer:3.19.6",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "Dart-Code.flutter"
+            ]
+        }
+    }
+}
