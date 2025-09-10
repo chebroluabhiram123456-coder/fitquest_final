@@ -1,4 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../services/auth_service.dart';
 import '../widgets/frosted_glass_card.dart';
 import 'exercise_library_screen.dart';
 import 'workout_history_screen.dart';
@@ -9,6 +12,9 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final authService = AuthService();
+    final user = Provider.of<User?>(context);
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: SafeArea(
@@ -25,17 +31,13 @@ class ProfileScreen extends StatelessWidget {
                     child: Icon(Icons.person, size: 40, color: Colors.white),
                   ),
                   const SizedBox(width: 16),
+                  // Display user's email if available
                   Text(
-                    'Hi User!',
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    user?.email ?? 'Hi User!',
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                         ),
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    icon: const Icon(Icons.edit, color: Colors.white),
-                    onPressed: () {},
                   ),
                 ],
               ),
@@ -85,8 +87,11 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ),
               const Spacer(),
+              // Functional Log Out button
               TextButton(
-                onPressed: () {},
+                onPressed: () async {
+                  await authService.logOut();
+                },
                 child: const Text(
                   'Log Out',
                   style: TextStyle(color: Colors.red, fontSize: 16),
