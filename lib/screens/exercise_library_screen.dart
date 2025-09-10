@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
 import '../services/firestore_service.dart';
 import '../widgets/frosted_glass_card.dart';
 
@@ -13,7 +15,7 @@ class ExerciseLibraryScreen extends StatefulWidget {
 class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
   final FirestoreService _firestoreService = FirestoreService();
 
-  void _showExerciseDialog({DocumentSnapshot? exercise}) {
+  void _showExerciseDialog({DocumentSnapshot? exercise, required String userId}) {
     final nameController = TextEditingController(text: exercise?['name']);
     final categoryController = TextEditingController(text: exercise?['category']);
     final isEditing = exercise != null;
@@ -47,9 +49,9 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
             ElevatedButton(
               onPressed: () {
                 if (isEditing) {
-                  _firestoreService.updateExercise(exercise.id, nameController.text, categoryController.text);
+                  _firestoreService.updateExercise(userId, exercise.id, nameController.text, categoryController.text);
                 } else {
-                  _firestoreService.addExercise(nameController.text, categoryController.text);
+                  _firestoreService.addExercise(userId, nameController.text, categoryController.text);
                 }
                 Navigator.pop(context);
               },
@@ -63,15 +65,26 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Get the current user from the provider
+    final user = Provider.of<User?>(context);
+
+    // If for some reason there's no user, show an error message
+    if (user == null) {
+      return const Scaffold(
+        body: Center(child: Text('Please log in to see your exercises.')),
+      );
+    }
+
     return Scaffold(
-      backgroundColor: Colors.transparent, // For gradient background from AppShell
+      backgroundColor: Colors.transparent, 
       appBar: AppBar(
         title: const Text('Exercise Library'),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
       body: StreamBuilder<QuerySnapshot>(
-        stream: _firestoreService.getExercises(),
+        // Use the user's ID to fetch their specific exercises
+        stream: _firestoreService.getExercises(user.uid),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -117,11 +130,11 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
                             children: [
                               IconButton(
                                 icon: const Icon(Icons.edit, color: Colors.white70),
-                                onPressed: () => _showExerciseDialog(exercise: doc),
+                                onPressed: () => _showExerciseDialog(exercise: doc, userId: user.uid),
                               ),
                               IconButton(
                                 icon: const Icon(Icons.delete, color: Colors.redAccent),
-                                onPressed: () => _firestoreService.deleteExercise(doc.id),
+                                onPressed: () => _firestoreService.deleteExercise(user.uid, doc.id),
                               ),
                             ],
                           ),
@@ -137,7 +150,7 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _showExerciseDialog(),
+        onPressed: () => _showExerciseDialog(userId: user.uid),
         child: const Icon(Icons.add),
       ),
     );
