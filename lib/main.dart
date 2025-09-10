@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'app_shell.dart'; // We will create this next
+import 'package:provider/provider.dart';
+import 'app_shell.dart';
+import 'providers/workout_provider.dart'; // Import the provider
 
 void main() async {
-  // Ensure that Flutter bindings are initialized
   WidgetsFlutterBinding.ensureInitialized();
-  // Initialize Firebase
   await Firebase.initializeApp();
-  runApp(const MyApp());
+  
+  // Wrap the app with the provider
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => WorkoutProvider(),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -19,7 +26,7 @@ class MyApp extends StatelessWidget {
       title: 'FitQuest',
       theme: ThemeData(
         brightness: Brightness.dark,
-        primaryColor: const Color(0xFF6A1B9A), // A deep purple
+        primaryColor: const Color(0xFF6A1B9A),
         scaffoldBackgroundColor: const Color(0xFF121212),
         colorScheme: const ColorScheme.dark(
           primary: Color(0xFF8E44AD),
@@ -27,7 +34,7 @@ class MyApp extends StatelessWidget {
           background: Color(0xFF1E1E1E),
           surface: Color(0xFF1E1E1E),
         ),
-        fontFamily: 'Inter', // A clean, modern font
+        fontFamily: 'Inter',
       ),
       home: const AppShell(),
     );
