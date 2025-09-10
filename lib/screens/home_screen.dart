@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import '../providers/workout_provider.dart';
 import '../widgets/frosted_glass_card.dart';
 import 'workout_details_screen.dart';
 import 'weight_analytics_screen.dart';
@@ -8,6 +11,13 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Get today's day name (e.g., "Monday")
+    final today = DateFormat('EEEE').format(DateTime.now());
+    
+    // Listen to the provider for changes
+    final workoutProvider = Provider.of<WorkoutProvider>(context);
+    final todayPlan = workoutProvider.getPlanForDay(today) ?? WorkoutPlan(day: today, title: 'No Plan Today');
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: SafeArea(
@@ -25,9 +35,9 @@ class HomeScreen extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     ),
               ),
-              const Text(
-                "Here's your plan for Monday",
-                style: TextStyle(color: Colors.white70, fontSize: 16),
+              Text(
+                "Here's your plan for $today", // Dynamic day
+                style: const TextStyle(color: Colors.white70, fontSize: 16),
               ),
               const SizedBox(height: 24),
               FrostedGlassCard(
@@ -37,10 +47,10 @@ class HomeScreen extends StatelessWidget {
                     MaterialPageRoute(builder: (context) => const WorkoutDetailsScreen()),
                   );
                 },
-                child: const ListTile(
-                  title: Text('Chest & Biceps'),
-                  subtitle: Text('1 exercises'),
-                  trailing: Icon(Icons.arrow_forward_ios, color: Colors.white),
+                child: ListTile(
+                  title: Text(todayPlan.title), // Dynamic title from provider
+                  subtitle: Text('${todayPlan.exerciseCount} exercises'), // Dynamic count from provider
+                  trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white),
                   textColor: Colors.white,
                 ),
               ),
@@ -77,13 +87,14 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildDateSelector() {
+    // ... (This widget remains unchanged)
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
-          _buildDateChip('Mon', '8', isSelected: true),
+          _buildDateChip('Mon', '8'),
           _buildDateChip('Tue', '9'),
-          _buildDateChip('Wed', '10'),
+          _buildDateChip('Wed', '10', isSelected: true),
           _buildDateChip('Thu', '11'),
           _buildDateChip('Fri', '12'),
           _buildDateChip('Sat', '13'),
@@ -93,6 +104,7 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildDateChip(String day, String date, {bool isSelected = false}) {
+     // ... (This widget remains unchanged)
     return Container(
       margin: const EdgeInsets.only(right: 12),
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 18),
